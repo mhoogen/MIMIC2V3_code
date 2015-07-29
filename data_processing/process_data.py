@@ -1,4 +1,3 @@
-import goslate
 import numpy as np
 from util_ import util
 from util_ import in_out as io
@@ -427,8 +426,12 @@ class createProcessedFiles:
         # The ID will also be included.
         aggr_set = np.zeros((0, 0))
         new_attributes = []
+        count = 0
 
         for ID in self.patient_dict:
+            if (count % 1000 == 0):
+                print '====== ' + str(count)
+            count += 1
             # we start with day 1 and continue until either
             day_count = 1
             index = 0
@@ -563,12 +566,17 @@ class createProcessedFiles:
 
     def read_files_and_calculate_attributes(self, file, type=0):
 
-        rows = io.read_csv(file, ';');
+        print '====== reading the data'
+        rows = io.read_csv(file, ',');
+        print '====== pointer to data obtained'
         counter = 0
         ids = []
         dataset_headers = []
 
         for row in rows:
+
+            if counter % 10000 == 0:
+                print '====== ' + str(counter)
             # Assuming the headers are in the first row.
             if counter == 0:
                 temp_dataset_headers = row[1:len(row)]
@@ -588,7 +596,6 @@ class createProcessedFiles:
                         self.headers.append(header)
                     dataset_headers.append(header)
                 self.headers.append('label')
-                counter += 1
             else:
                 # Assuming ID is the first attribute.
                 id = row[0]
@@ -598,7 +605,7 @@ class createProcessedFiles:
                     for header in self.headers:
                         self.patient_dict[id][header] = []
                 # Get the time to order based upon it
-                timestamp = time.strptime(row[self.headers.index('charttime')+1][0:17], "%d-%m-%y %H:%M:%S")
+                timestamp = time.strptime(row[self.headers.index('charttime')+1][0:15], "%d-%b-%y %H.%M")
                 times = self.patient_dict[id]['charttime']
                 # Currently no ordering of the times assumed. If they are, just append at the end
                 index = 0
@@ -609,9 +616,10 @@ class createProcessedFiles:
                         self.patient_dict[id]['charttime'].insert(index, timestamp)
                     else:
                         # Determine the values (there can be multiple in the case of categorial attributes)
-                        [features, values] = self.process_value_individual(dataset_headers[row_index-1], row[row_index].replace(',','.'), type)
+                        [features, values] = self.process_value_individual(dataset_headers[row_index-1], row[row_index], type)
                         for i in range(0, len(values)):
                             self.patient_dict[id][features[i]].insert(index, values[i])
                 # Now assign the label
-                self.patient_dict[id]['label'].insert(index, self.determine_class(self.patient_dict[id]['daysfromdischtodeath'][index], self.patient_dict[id]['hospital_expire_flg'][index]))
+                self.patient_dict[id]['label'].insert(index, self.determine_class(self.patient_dict[id]['daysfromdischtodeath'][index], self.patient_dict[id]['expire_flg'][index]))
+            counter += 1
         return self.aggregate_data(type)
