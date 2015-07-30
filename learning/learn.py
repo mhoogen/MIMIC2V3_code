@@ -105,27 +105,49 @@ def execute_with_algorithm(alg, X, y, fname, headers, out_dir, record_id, target
 	'''execute learning task using the specified algorithm'''
 
 	# feature selection
-	k = 50
-	if feature_selection and X.shape[1] >= k:
+	# feature selection
+	k = 30
+	#k = 100000
+	if feature_selection:
 		print '  ...performing feature selection'
+		if X.shape[1] < k:
+			k = X.shape[1]
 
 		pearsons = []
+		pearsons_print = []
 		for i in range(X.shape[1]):
-			#p = pearsonr(np.squeeze(np.asarray(X[:,i])), y)
-			occur = np.squeeze(X[:,i].tolist())
-			if sum(occur) > 0:
-				p = pearsonr(occur, y)
-				# print str(i) + '(' + str(X.shape[1]) + ') : ' + str(headers[i])
+			if sum(np.asarray(X[:,i])) != 0:
+				p = pearsonr(np.squeeze(np.asarray(X[:,i])), y)
 				pearsons.append(abs(p[0]))
+				pearsons_print.append(p[0])
 			else:
 				pearsons.append(0)
-		best_features = np.array(pearsons).argsort()[-k:][::-1]
+				pearsons_print.append(0)
 
-		# print best_features
+		# best_features = np.array(pearsons).argsort()[-k:][::-1]
+
+		sorted_features = np.array(pearsons).argsort()[:][::-1]
+
+		best_features = []
+		remove_list = []
+		i = 0
+		while len(best_features) < k:
+			if not i in remove_list:
+				best_features.append(sorted_features[i])
+				for j in range(i, X.shape[1]):
+					p = pearsonr(np.asarray(X[:,sorted_features[i]]).tolist(), np.asarray(X[:,sorted_features[j]]).tolist())
+					if abs(p[0]) >= 0.7:
+						remove_list.append(j)
+			i += 1
+
+
+		old_headers = list(headers)
 		headers = [headers[i] for i in best_features]
+		f = open(out_dir+"correlations_" + fname + '.csv', 'w')
+		for header in headers:
+			f.write(str(header) + ' & ' + str(float("{0:.2f}".format(pearsons_print[old_headers.index(header)]))) + '\n')
+		f.close()
 		new_X = X[:,best_features]
-		# print new_X.shape
-		# print y.shape
 
 	else:
 		new_X = X
