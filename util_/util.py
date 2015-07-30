@@ -1,7 +1,6 @@
 from in_out import read_csv
 import os
 from datetime import datetime
-import cx_Oracle
 from math import sqrt,erf
 import numpy as np
 
@@ -84,10 +83,6 @@ def tkinter2var(d):
 				print d[k]
 				pass
 	return result
-
-def sql_connect():
-	'''connects to the SQL database, returns server handle'''
-	return cx_Oracle.connect('datamart', 'datamart', '10.67.201.10:1521/XE')
 
 def proportion_p_value(count1, n1, count2, n2):
 	'''calculates the p-value of two proportion'''
