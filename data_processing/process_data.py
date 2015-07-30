@@ -10,9 +10,10 @@ class createProcessedFiles:
 
 
     def __init__(self):
+        self.writer = ''
         self.patient_dict = {}
         self.headers = []
-        self.number_of_days_considered = 6 # 6 days (cf. Caleb)
+        self.number_of_days_considered = 1 # First 1 day, should be 6 days (cf. Caleb)
         self.day_change = 23 # 11pm is the time at which the day changes.
         self.knn_granularity = 15 # 15 minute ranges considered
 
@@ -165,8 +166,8 @@ class createProcessedFiles:
         self.categorial_mapping['sex'] = {'sex_bin':{'m':0, 'default':1}}
         self.categorial_mapping['ethnicity_descr'] = {'white':{'white':1, 'default':0}} # Needs to be extended!!
 
-        self.features_to_be_excluded = ["HOSPITAL_EXPIRE_FLG","DAYSFROMDISCHTODEATH","AGEATDEATH","INTIME",
-                                        "OUTTIME","LOS","FIRST_CAREUNIT","LAST_CAREUNIT", "CHARTTIME"]
+        self.features_to_be_excluded = ["EXPIRE_FLG","DAYSFROMDISCHTODEATH","AGEATDEATH","ICUSTAY_INTIME",
+                                        "ICUSTAY_OUTTIME","ICUSTAY_LOS","ICUSTAY_FIRST_CAREUNIT","ICUSTAY_LAST_CAREUNIT", "CHARTTIME"]
         self.features_to_be_excluded = [feat.lower() for feat in self.features_to_be_excluded]
         self.fixed_features = ['ID', 'label', 'sex_bin', 'white']
         self.fixed_features = [feat.lower() for feat in self.fixed_features]
@@ -353,7 +354,7 @@ class createProcessedFiles:
 
         final_attributes.insert(1, 'day')
         final_values.insert(1, day_count)
-        return final_attributes, final_values
+        return final_attributes, np.array(final_values)
 
     def to_struct_time(self, timestamps):
         struct_timestamps = []
@@ -413,9 +414,11 @@ class createProcessedFiles:
 
     def aggregate_day(self, attributes, patient_measurements, day_count, type):
         if type == 0 or type == 1:
-            return self.aggregate_day_sdas_das(attributes, patient_measurements, day_count, type)
+            [attr, values] = self.aggregate_day_sdas_das(attributes, patient_measurements, day_count, type)
+            return [attr, values.astype(np.float64, copy=False)]
         elif type == 2:
-            return self.aggregate_day_knn(attributes, patient_measurements, day_count)
+            [attr, values] = self.aggregate_day_knn(attributes, patient_measurements, day_count)
+            return [attr, values.astype(np.float64, copy=False)]
 
     # Aggregation for both the SDAS and DAS approach, if more fine-grained predictions are
     # required this should slightly change.
@@ -427,6 +430,7 @@ class createProcessedFiles:
         aggr_set = np.zeros((0, 0))
         new_attributes = []
         count = 0
+        row_count = 0
 
         for ID in self.patient_dict:
             if (count % 1000 == 0):
@@ -452,6 +456,7 @@ class createProcessedFiles:
                      # Set the attributes in case we haven't done so yet.
                     if len(new_attributes) == 0:
                         new_attributes = attr
+                        self.writer.writerow(attr)
                         aggr_set = np.zeros((0, len(attr)))
                     if type == 2:
                         for i in range(0, aggregated_values.shape[0]):
@@ -490,8 +495,9 @@ class createProcessedFiles:
                     else:
                         aggr_set = np.append(aggr_set, np.column_stack(aggregated_values), axis=0)
 
-
-        aggr_set = aggr_set.astype(np.float64, copy=False)
+            for r in range(row_count, aggr_set.shape[0]):
+                self.writer.writerow(aggr_set[r,:])
+            row_count = aggr_set.shape[0]
 
         # print aggr_set.shape
         return new_attributes, aggr_set
@@ -564,7 +570,9 @@ class createProcessedFiles:
     # - 2 for KNN where data is not actually aggregated but just stored in a
     #     time uniform way
 
-    def read_files_and_calculate_attributes(self, file, type=0):
+    def read_files_and_calculate_attributes(self, file, file_out, type=0):
+
+        self.writer = io.write_csv(file_out)
 
         print '====== reading the data'
         rows = io.read_csv(file, ',');
