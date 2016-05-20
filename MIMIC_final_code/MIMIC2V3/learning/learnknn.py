@@ -58,8 +58,14 @@ def execute_knn(in_dir, out_dir, record_id, target_id, day_id, day, k):
 		IDrows = {}
 
 		# ordering of time points and complete data (filled with nan's if not available) assumed!
-
-		# Select the right day and normalize the columns
+		
+		
+#  		features_to_be_removed   =    [ "pvc_bin","pnc_bin","pac_bin","ect_freq_bin","full_code_bin","comfort_meas_bin","other_code_bin","no_cpr_bin",
+# 										"dnr_bin","dni_bin","fall_risk_bin","orientation_ord","orient_unable_ass_bin","riker_sas_ord","vent_bin",
+# 										"vent_mode_ord","pacemaker_bin","trach_bin","flush_skin_bin","jaundice_skin_bin","pale_skin_bin","impaired_skin_bin",
+# 										"iabp_ord","iabp_bin","svnsicu_bin","svcsicu_bin","svcsru_bin","svmicu_bin","svmsicu_bin","svother_bin","svccu_bin",
+# 										"gender"] 
+	
 		exclude = [146,140,95,123,88,133,22,65,49,114,178,55,133,138,34,186,20,73]
 		new_index = 0
 		for i in range(0, X.shape[0]):
@@ -89,36 +95,7 @@ def execute_knn(in_dir, out_dir, record_id, target_id, day_id, day, k):
 		
 		dtw_attr = ['hr', 'resp', 'nbp', 'sbp', 'dbp', 'so2']
 		#"sbp","dbp",
-# 		features_to_be_removed   =    [ "gcs","weight","admitwt","nbpsys","nbpdias","nbpmean","map","papmean","papsd","crdindx","svr","cotd","pcwp",             
-# 										"pvr","na","k","cl","co2","glucose","bun","creatinine","mg","ast","alt","ca","tbili","tprotein","albumin",
-# 										"lactate","troponin","hct","platelets","inr","pt","ptt","wbc","rbc","artco2","artpaco2","artpao2","artph","fio2set","resptot",           
-# 										"respset","pip","plateaupres","tidvolobs","tidvolset","tidvolspon","sao2","hrmva","hrmpaced","hrmhb","hrmsa",
-# 										"pvc_bin","pnc_bin","pac_bin","ect_freq_bin","full_code_bin","comfort_meas_bin","other_code_bin","no_cpr_bin",
-# 										"dnr_bin","dni_bin","fall_risk_bin","orientation_ord","orient_unable_ass_bin","riker_sas_ord","vent_bin",
-# 										"vent_mode_ord","pacemaker_bin","trach_bin","flush_skin_bin","jaundice_skin_bin","pale_skin_bin","impaired_skin_bin",
-# 										"iabp_ord","iabp_bin","svnsicu_bin","svcsicu_bin","svcsru_bin","svmicu_bin","svmsicu_bin","svother_bin","svccu_bin",
-# 										"gender"]               
-#  		features_to_be_removed   =    [ "pvc_bin","pnc_bin","pac_bin","ect_freq_bin","full_code_bin","comfort_meas_bin","other_code_bin","no_cpr_bin",
-# 										"dnr_bin","dni_bin","fall_risk_bin","orientation_ord","orient_unable_ass_bin","riker_sas_ord","vent_bin",
-# 										"vent_mode_ord","pacemaker_bin","trach_bin","flush_skin_bin","jaundice_skin_bin","pale_skin_bin","impaired_skin_bin",
-# 										"iabp_ord","iabp_bin","svnsicu_bin","svcsicu_bin","svcsru_bin","svmicu_bin","svmsicu_bin","svother_bin","svccu_bin",
-# 										"gender"]               
-#  		
-
-# 		features_to_be_used = ['gcs', 'weight', 'admitwt', 'nbpsys', 'nbpdias', 'nbpmean', 'sbp', 'dbp', 'map', 'hr', 'resp', 'spo2', 'cvp', 'papmean', 'papsd', 'crdindx', 'svr', 'cotd', 'cofck', 'pcwp', 'na', 'k', 'cl', 'co2', 'glucose', 'bun', 'creatinine', 'mg', 'ast', 'alt', 'ca', 'ionca', 'tbili', 'albumin', 'lactate', 'troponin', 'hct', 'hg', 'platelets', 'inr', 'pt', 'ptt', 'wbc', 'rbc', 'temp', 'artbe', 'artco2', 'artpaco2', 'artpao2', 'artph', 'fio2set', 'peepset', 'resptot', 'respset', 'respspon', 'pip', 'plateaupres', 'tidvolobs', 'tidvolset', 'tidvolspon', 'sao2', 'hrmva', 'hrmpaced', 'hrmhb', 'hrmsa', 'pvc_bin', 'ect_freq_bin', 'full_code_bin', 'comfort_meas_bin', 'dnr_bin', 'fall_risk_bin', 'orientation_ord', 'orient_unable_ass_bin', 'riker_sas_ord', 'vent_mode_ord', 'flush_skin_bin', 'jaundice_skin_bin', 'pale_skin_bin', 'impaired_skin_bin', 'iabp_ord', 'svnsicu_bin', 'svcsicu_bin', 'svcsru_bin', 'svmicu_bin', 'svccu_bin', 'urineout', 'inputrbcs', 'inputotherblood', 'aggrestat', 'amiodarone', 'diltiazem', 'dopamine', 'epinephrinek', 'esmolol', 'fentanyl', 'heparin', 'insulin', 'integrelin', 'labetolol', 'levophedk', 'lidocaine', 'midazolam', 'miltinone', 'morphinesolfate', 'narcan', 'natrecor', 'neosynephrinek', 'nitroglycerinek', 'nitroprusside', 'propofol', 'tpa', 'vasopressin', 'vecuronium', 'icustay_admit_age', 'weight_first', 'white', 'urinebyhour', 'sbpm', 'dbpm', 'mapm', 'pulsepres', 'eco', 'shockidx', 'buntocr', 'ventlen', 'ventlenc', 'pressortime', 'cumpressortime', 'vasopressorsum.std', 'pressorsum.std', 'bpcor', 'ecoslope']	
-# 		features_to_be_used = ['urinebyhour','sedativesm','cvpm','pcwpm','crdindxm','papmeanm','dopmd','mapm.pr','pressd4']
-# 		features_to_be_removed_indices = []	
-# 		for attr in new_headers:
-# 			if attr not in features_to_be_used:
-# 				features_to_be_removed_indices.append(new_headers.index(attr))		
-# 		new_headers = np.array(new_headers)
-# 		for attr2 in reversed(features_to_be_removed_indices):
-# 			new_headers = np.delete(new_headers,attr2 )
-# 		new_headers = new_headers.tolist()
-# 		print str(len(new_headers)) + "number of new features after vars to be removed"
-# 		print "features removed"
-#  		new_X = np.delete(new_X,features_to_be_removed_indices,1)	
-#  				
+            
 		X = new_X
 		print len(X)
 				
