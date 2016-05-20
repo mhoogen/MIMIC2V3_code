@@ -81,12 +81,8 @@ def execute_knn(in_dir, out_dir, record_id, target_id, day_id, day, k):
 				new_X = np.append(new_X, np.column_stack(row), axis=0)
 				new_index += 1
 		
-		#Patients are clustered by service type   age:{"18-35","35-50","50-65","65-80","80+"} and Glasgow coma scale (GCS) :{"<8","8-12","=>13"} 
-		#clusters = clustering.clusterByAgeAndCGS(IDs,X,IDrows,headers)
-		print "Clusters are found"
-		#print kmeans.find_clusters(IDs,X,IDrows,new_headers,dtw_attr,window,5)
-		
 		ID_column = new_X[:,0]
+		
 		# Remove the id, the day, and the time stamp from the data and headers.
 		new_X = np.delete(new_X, 2, 1)
 		new_X = np.delete(new_X, 1, 1)
@@ -94,7 +90,6 @@ def execute_knn(in_dir, out_dir, record_id, target_id, day_id, day, k):
 		new_headers = headers[3:len(headers)]
 		
 		dtw_attr = ['hr', 'resp', 'nbp', 'sbp', 'dbp', 'so2']
-		#"sbp","dbp",
             
 		X = new_X
 		print len(X)
